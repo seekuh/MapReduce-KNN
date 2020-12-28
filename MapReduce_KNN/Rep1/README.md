@@ -11,11 +11,9 @@ Testumgebung:
 
 MAacOS Mojave 10.14.5 Python 3.6.4 hadoop 2.8.0
 
-
-
 K Nächstgelegener Nachbar
 
-KNN.py: Trainingscode für den K Nearest Neighbor-Algorithmus. Empfängt den Trainingssatz als Eingabe und gibt den mod.
+KNN.py: Trainingscode für den K Nearest Neighbor-Algorithmus. Empfängt den Trainingssatz als Eingabe und gibt das Model aus
 
 KNNPredictor.py: Code für die Vorhersage des K Nearest Neighbor-Algorithmus. Optionsmodell, das den Pfad des Mods darstellt. Empfängt den Testsatz als Eingabe und gibt die Genauigkeit aus.
 
@@ -31,3 +29,4 @@ Dies kann verwendet werden, um die Leistung des Modells zu testen. Holen Sie die
 
 Accuary:73.49397590361446%
 
+python ./MapReduce_KNN/Rep1/MRKnnSuggestion.py --model ./MapReduce_KNN/Rep1/model2.json -k 3 ./data/test_data.csv

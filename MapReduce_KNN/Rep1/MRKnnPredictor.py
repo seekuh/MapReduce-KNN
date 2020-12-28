@@ -1,5 +1,6 @@
 import numpy as np
 import collections
+import pandas as pd
 from scipy import stats
 from mrjob.job import MRJob
 from mrjob.step import MRStep
@@ -13,7 +14,7 @@ true = 0
 false = 0
 class KNNTest(MRJob):
     '''
-    KNN predicts classes. Receive test sets from the file and predict their classes based on the features of the test sets and compare 
+    KNN predicts classes. Receive test sets from the file and predict their classes based on the features of the test sets and compares 
     them with the real classes to see if the prediction is successful
     '''
 
@@ -22,6 +23,7 @@ class KNNTest(MRJob):
         Input args. including the address of the model (output of KNNTrain), and the value of K.
         '''
         super(KNNTest,self).configure_args()
+        #to-do: argument parser rausballern
         #model's address
         self.add_passthru_arg("--model",
                                 type = str,
@@ -60,26 +62,26 @@ class KNNTest(MRJob):
     def __init__(self, *args, **kwargs):
         super(KNNTest, self).__init__(*args, **kwargs)
 
-    def steps(self):
+    def steps(self): 
         return ([MRStep(mapper=self.mapper,reducer=self.reducer)])
 
     def mapper(self,_,line):
         '''
         Mapper function. Receives each row of the test set, extracts its feature set, and calculates the K points in the training set that are closest to it.
-        The class with the most K points is determined and the class corresponding to that test sample is predicted to be that class. Then compare it with the real class, and if
+        The class with the most K points is determined and the class corresponding to that test ssample is predicted to be that class. Then compare it with the real class, and if
         prediction is correct, output (true, 1), otherwise output (false, 1)
         '''
-        # Extract feature set and class
+        # Extract feature set and class of test data
         data = line.split(',')
         label = data[-1]
-        features = [float(x) for x in data[:-1]]
+        features = [float(x) for x in data[:-1]] #austauschen durch lambda
         nearest = [] #k nearest points
         count = {} #The number corresponding to each category in nearest
 
         for cat in self.model:
             for point in self.model[cat]:
                 # distance, multiplied by -1 because afterwards the heap sort will be used and needs to be ranked from largest to smallest, but the python implementation is the smallest heap, so *(-1)
-                dis = -1*np.linalg.norm(np.array(point)-np.array(features)) 
+                dis = -1*np.linalg.norm(np.array(point)-np.array(features)) #L2 Norm/eukl Distanz Distanzmaß behalten? Unterschiedliche implementieren?
                 #Make a tuple of distances, points, and categories to which they belong for easy comparison
                 item = tuple([dis, point, cat])
                 if(len(nearest)<self.k):
@@ -88,7 +90,7 @@ class KNNTest(MRJob):
                     continue
                 elif(len(nearest)==self.k):
                     # If the nearest length is equal to k, transform the nearest into a heap
-                    heapq.heapify(nearest)
+                    heapq.heapify(nearest) #queueue statt heap?
                 if(dis > nearest[0][0]):
                     # If the distance of the new point is less than the longest point in the nearest, the longest point is popped out and the new point enters the nearest
                     heapq.heapreplace(nearest,item)
@@ -100,7 +102,8 @@ class KNNTest(MRJob):
             else:
                 count[temp[2]] += 1
          # of most calculated categories        
-        res = max(count, key=count.get)
+        res = max(count, key=count.get) #optional: übergabe von threshhold
+        yield res
         # Output true if the prediction is successful, otherwise false
         if(res==label):
             yield 'true', 1
@@ -121,4 +124,5 @@ class KNNTest(MRJob):
 
 if __name__ == '__main__':
     KNNTest.run()
-    print("Accuary:"+str(true/(true+false)*100)+"%")
+    acc = (true/(true+false)*100)
+    print("Accuary:"+str(acc)+"%")
