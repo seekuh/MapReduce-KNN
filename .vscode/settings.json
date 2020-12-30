@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/anikaschmitt/opt/anaconda3/envs/spotify/bin/python"
+    "python.pythonPath": "/Users/anikaschmitt/opt/anaconda3/envs/py3.6/bin/python",
+    "jupyter.jupyterServerType": "local"
 }
